@@ -12,50 +12,123 @@
 
 <body>
     <h4>Заполните, пожалуйста, регистрационную форму:</h4>
+
+    <script>
+        function post(link, formId, back) {
+            if (!link.posting) {
+                if ($(formId).valid()) {
+
+                    var mortgage_no = $("#mortgage").val();
+
+                    if (mortgage_no == "1234567890123" ||
+                        mortgage_no == "0000000000000" ||
+                        mortgage_no == "1111111111111" ||
+                        mortgage_no == "2222222222222" ||
+                        mortgage_no == "3333333333333" ||
+                        mortgage_no == "4444444444444" ||
+                        mortgage_no == "5555555555555" ||
+                        mortgage_no == "6666666666666" ||
+                        mortgage_no == "7777777777777" ||
+                        mortgage_no == "8888888888888" ||
+                        mortgage_no == "9999999999999"
+                    ) {
+                        alert("Введен некорректный номер закладной. Если Вы являетесь заемщиком, обратитесь по телефону 8 (800) 700-29-22 (круглосуточно).");
+                        return;
+                    }
+
+                    link.disabled = link.posting = true;
+                    var form = $(formId);
+                    $.post(form.attr('action'), form.serialize(), 'text')
+                            .done( function(data) {
+                                if (data == 'sent') {
+                                    alert("Вы успешно зарегистрированы в Личном кабинете. Информация для входа в систему отправлена на указанный Вами номер мобильного телефона.");
+                                    document.location.href = "${pageContext.request.contextPath}";
+                                }
+                                else if (data == 'activated') {
+                                    alert("Ваша учетная запись уже активирована в Личном кабинете. Если Вы забыли пароль, воспользуйтесь ссылкой \"Забыли логин или пароль?\" на форме \"Вход в систему\".");
+                                    document.location.href = "${pageContext.request.contextPath}";
+                                }
+                                else if (data == 'locked') {
+                                    alert("Ваша учетная запись была заблокирована, для получения информации обратитесь в службу поддержки по телефону 8 (800) 700-29-22.");
+                                    document.location.href = "${pageContext.request.contextPath}";
+                                }
+                                else if (data == 'not-found') {
+                                    alert("Учетная запись, соответствующая данным в форме регистрации не найдена. Если Вы являетесь заемщиком, обратитесь по телефону 8 (800) 700-29-22 (круглосуточно).");
+                                    document.location.href = "${pageContext.request.contextPath}";
+                                }
+                                else if (data == 'not-found-phone') {
+                                    alert("Уважаемый клиент, для регистрации в системе Вам необходимо направить на электронную почту lkz@ahml.ru информацию с актуальным номером телефона. В теме сообщения укажите: «Регистрация в ЛКЗ / ФИО / номер закладной»");
+                                    document.location.href = "${pageContext.request.contextPath}";
+                                }
+                                else {
+                                    alert("Ошибка при отправке формы (" + data + ")");
+                                    document.location.href = "${pageContext.request.contextPath}";
+                                }
+                            } )
+                            .fail( function() { alert("Ошибка при отправке формы"); link.disabled = link.posting = false; } )
+                            .always( function() { } );
+                }
+            }
+            return false;
+        }
+    </script>
+
+<div id="regform">
+    <h4>Заполните, пожалуйста, регистрационную форму:</h4>
     <div>
         <form id="frm" method="post" action="${pageContext.request.contextPath}/register">
             <div class="form-group">
                 <label class="label" for="fio">Фамилия Имя Отчество (<i>например, Иванов Иван Иванович</i>)</label>
-                <input id="fio" name="fio" class="input required" type="text" value="" />
+                <input id="fio" name="fio" class="input required" type="text" value=""/>
             </div>
             <div class="form-group">
                 <label class="label" for="birth">Дата рождения</label>
-                <input id="birth" name="birth" class="input js-datepicker required" type="text" value="" />
+                <input id="birth" name="birth" class="input js-datepicker required" type="text" value=""/>
             </div>
             <div class="form-group">
                 <label class="label" for="mortgage">Номер закладной (<i>например, 1234567890123</i>)</label>
-                <input id="mortgage" name="mortgage" class="input required" type="text" maxlength="13" data-mask="9999999999999" value="" />
+                <input id="mortgage" name="mortgage" class="input required" type="text" maxlength="13" data-mask="9999999999999" value=""/>
             </div>
             <div class="form-group">
                 <label class="label" for="phone">Номер телефона</label>
-                <input id="phone" name="phone" class="input required" type="text" maxlength="14" data-mask="(999) 999-9999" value="" />
+                <input id="phone" name="phone" class="input required" type="text" maxlength="14" data-mask="(999) 999-9999" value=""/>
             </div>
             <div class="row lkz-row">
                 <div class="wrap-buttons small col-xs-12">
-                    <input type="button" class="btn blue" value="Отправить" onclick="return post(this, 'form#frm', '${pageContext.request.contextPath}/lkz/claim/');" />
+                    <input type="button" class="btn blue" value="Отправить" onclick="return post(this, 'form#frm', '${pageContext.request.contextPath}/lkz/claim/');"/>
                 </div>
             </div>
         </form>
     </div>
+</div>
     <script src="./assets/js/main.min.js"></script>
-    <script>
-        $.fn.setCursorPosition = function(pos) {
-            if ($(this).get(0).setSelectionRange) {
-                $(this).get(0).setSelectionRange(pos, pos);
-            } else if ($(this).get(0).createTextRange) {
-                var range = $(this).get(0).createTextRange();
-                range.collapse(true);
-                range.moveEnd('character', pos);
-                range.moveStart('character', pos);
-                range.select();
-            }
-        };
+    <script src="./assets/js/jquery.inputmask.min.js"></script>
 
-        $(function() {
-            $('#mortgage').mask('9999999999999');
-            $('#phone').mask('+7 (999) 9999-9999');
+    <script>
+        $(document).ready(function(){
+            const imOptions = {
+                "onincomplete":  function(){ 
+                    alert('inputmask incomplete');
+
+                    var e = $(this);
+                    if (!e.hasClass("disable-msk-validate")) {
+                            var t = e.parent(".form-group").find(".mask-error");
+                            0 == t.length && (e.parent(".form-group").append('<label class="mask-error">Введено недопустимое значение</label>'), e.parent(".form-group").addClass("error"))
+                        }
+                },
+                "oncomplete":  function(){ 
+                    alert('inputmask complete');
+
+                    var e = $(this);
+                    var t = e.parent(".form-group").find(".mask-error");
+                        0 != t.length && (e.parent(".form-group").find(".mask-error").remove(), e.parent(".form-group").removeClass("error"))
+                }
+            };
+
+            $("#phone").inputmask("(999) 999-9999", imOptions);
+            $("#mortgage").inputmask("9999999999999", imOptions);
         });
-    </script>
+    </script>>
 </body>
 
 </html>
